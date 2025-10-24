@@ -72,7 +72,7 @@ pub enum Commands {
 
 #[derive(Debug, Clone, Args)]
 pub struct CleanSelection {
-    /// Remove everything (local, Gemini, global, master).
+    /// Remove everything (local, Gemini, Codex, global, master).
     #[arg(long)]
     pub all: bool,
     /// Remove the project `.mcp.json`.
@@ -81,7 +81,7 @@ pub struct CleanSelection {
     /// Remove project `.gemini/settings.json`.
     #[arg(long)]
     pub gemini: bool,
-    /// Remove project `.codex/config.toml`.
+    /// Remove global `~/.codex/config.toml`.
     #[arg(long)]
     pub codex: bool,
     /// Remove the global `~/.mcp.json`.
