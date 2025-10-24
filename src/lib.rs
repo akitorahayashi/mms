@@ -1,9 +1,7 @@
-//! Library entry point exposing the core command handlers.
+//! Library entry point exposing the MCP management CLI and supporting modules.
 
+pub mod cli;
 pub mod commands;
+pub mod config;
 pub mod error;
-
-mod core;
-mod storage;
-
-pub use commands::{add, delete, list};
+pub mod integration;
