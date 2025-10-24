@@ -1,4 +1,4 @@
-//! Shared testing utilities mirroring the reference project's fixture culture.
+//! Shared testing utilities for exercising the `mms` CLI.
 
 use assert_cmd::Command;
 use std::env;
@@ -7,7 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 
-/// Testing harness providing an isolated HOME/workspace pair for CLI and SDK exercises.
+/// Testing harness providing an isolated HOME/workspace pair for CLI scenarios.
 #[allow(dead_code)]
 pub struct TestContext {
     root: TempDir,
@@ -48,59 +48,31 @@ impl TestContext {
         path
     }
 
-    /// Populate the default workspace with an item file containing the provided contents.
-    pub fn write_item_file(&self, contents: &str) {
-        let item_path = self.work_dir().join("item.txt");
-        fs::write(&item_path, contents).expect("Failed to write item file for test");
-    }
-
-    /// Create an item file in the given directory with the provided contents.
-    pub fn write_item_file_in<P: AsRef<Path>>(&self, dir: P, contents: &str) {
-        let path = dir.as_ref().join("item.txt");
-        fs::write(path, contents).expect("Failed to write item file");
-    }
-
-    /// Build a command for invoking the compiled `rs-cli-tmpl` binary within the default workspace.
+    /// Build a command for invoking the compiled `mms` binary within the default workspace.
     pub fn cli(&self) -> Command {
         self.cli_in(self.work_dir())
     }
 
-    /// Build a command for invoking the compiled `rs-cli-tmpl` binary within a custom directory.
+    /// Build a command for invoking the compiled `mms` binary within a custom directory.
     pub fn cli_in<P: AsRef<Path>>(&self, dir: P) -> Command {
-        let mut cmd =
-            Command::cargo_bin("rs-cli-tmpl").expect("Failed to locate rs-cli-tmpl binary");
+        let mut cmd = Command::cargo_bin("mms").expect("Failed to locate mms binary");
         cmd.current_dir(dir.as_ref()).env("HOME", self.home());
         cmd
     }
 
-    /// Return the path where the CLI stores a saved item file for the provided identifier.
-    pub fn saved_item_path(&self, id: &str) -> PathBuf {
-        self.home().join(".config").join("rs-cli-tmpl").join(id).join("item.txt")
+    /// Path to the global `~/.mcp.json` file within the test sandbox.
+    pub fn global_mcp_path(&self) -> PathBuf {
+        self.home().join(".mcp.json")
     }
 
-    /// Assert that a saved item contains the provided value snippet.
-    pub fn assert_saved_item_contains(&self, id: &str, expected_snippet: &str) {
-        let item_path = self.saved_item_path(id);
-        assert!(item_path.exists(), "Expected saved item at {}", item_path.display());
-        let content = fs::read_to_string(&item_path).expect("Failed to read saved item");
-        assert!(
-            content.contains(expected_snippet),
-            "Saved item for id `{id}` did not contain `{expected}`; content: {content}",
-            expected = expected_snippet
-        );
+    /// Path to the CLI master catalogue file within the sandbox.
+    pub fn master_catalogue_path(&self) -> PathBuf {
+        self.home().join(".config").join("mms").join("master.json")
     }
 
-    /// Execute a closure after temporarily switching into the provided directory.
-    pub fn with_dir<F, R, P>(&self, dir: P, action: F) -> R
-    where
-        F: FnOnce() -> R,
-        P: AsRef<Path>,
-    {
-        let original = env::current_dir().expect("Failed to capture current dir");
-        env::set_current_dir(dir.as_ref()).expect("Failed to switch current dir");
-        let result = action();
-        env::set_current_dir(original).expect("Failed to restore current dir");
-        result
+    /// Path to the local `.mcp.json` under the default workspace.
+    pub fn local_mcp_path(&self) -> PathBuf {
+        self.work_dir().join(".mcp.json")
     }
 }
 

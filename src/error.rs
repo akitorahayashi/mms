@@ -1,53 +1,44 @@
-use std::error::Error;
-use std::fmt::{self, Display};
+use std::env::VarError;
 use std::io;
+use std::path::PathBuf;
+use thiserror::Error;
 
-/// Library-wide error type capturing domain-neutral and underlying I/O failures.
-#[derive(Debug)]
+/// Library-wide error type capturing configuration and synchronization failures.
+#[derive(Debug, Error)]
 pub enum AppError {
-    Io(io::Error),
-    /// Configuration or environment issue that prevents command execution.
-    ConfigError(String),
-    /// Raised when a requested item cannot be located in storage.
-    ItemNotFound(String),
+    #[error("configuration error: {0}")]
+    Config(String),
+    #[error("environment variable {0} is not set")]
+    MissingEnv(String),
+    #[error("expected file not found: {0}")]
+    MissingFile(PathBuf),
+    #[error(transparent)]
+    Io(#[from] io::Error),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+    #[error(transparent)]
+    Toml(#[from] toml_edit::TomlError),
 }
 
-impl Display for AppError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            AppError::Io(err) => write!(f, "{}", err),
-            AppError::ConfigError(message) => write!(f, "{message}"),
-            AppError::ItemNotFound(id) => write!(f, "Item '{id}' was not found"),
+impl From<VarError> for AppError {
+    fn from(value: VarError) -> Self {
+        match value {
+            VarError::NotPresent => {
+                AppError::Config("required environment variable is missing".into())
+            }
+            VarError::NotUnicode(_) => {
+                AppError::Config("environment variable contained invalid UTF-8".into())
+            }
         }
-    }
-}
-
-impl Error for AppError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match self {
-            AppError::Io(err) => Some(err),
-            AppError::ConfigError(_) | AppError::ItemNotFound(_) => None,
-        }
-    }
-}
-
-impl From<io::Error> for AppError {
-    fn from(value: io::Error) -> Self {
-        AppError::Io(value)
     }
 }
 
 impl AppError {
-    pub(crate) fn config_error<S: Into<String>>(message: S) -> Self {
-        AppError::ConfigError(message.into())
+    pub(crate) fn config<S: Into<String>>(message: S) -> Self {
+        Self::Config(message.into())
     }
 
-    /// Provide an `io::ErrorKind`-like view for callers expecting legacy behavior.
-    pub fn kind(&self) -> io::ErrorKind {
-        match self {
-            AppError::Io(err) => err.kind(),
-            AppError::ConfigError(_) => io::ErrorKind::InvalidInput,
-            AppError::ItemNotFound(_) => io::ErrorKind::NotFound,
-        }
+    pub(crate) fn missing_file<P: Into<PathBuf>>(path: P) -> Self {
+        Self::MissingFile(path.into())
     }
 }

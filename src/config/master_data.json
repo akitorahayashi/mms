@@ -1,0 +1,98 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "description": "Retrieves up-to-date documentation and code examples for any library"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "description": "Web automation and testing framework for browser interactions"
+    },
+    "serena": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--enable-web-dashboard",
+        "false",
+        "--enable-gui-log-window",
+        "false",
+        "--log-level",
+        "CRITICAL"
+      ],
+      "description": "Professional coding agent with semantic tools for intelligent codebase analysis"
+    },
+    "youtube": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anaisbetts/mcp-youtube"
+      ],
+      "description": "Downloads YouTube subtitles and video content for analysis"
+    },
+    "markitdown": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "markitdown-mcp"
+      ],
+      "description": "Converts various file formats (PDF, Word, etc.) to markdown"
+    },
+    "voicevox": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@t09tanaka/mcp-simple-voicevox"
+      ],
+      "description": "Japanese text-to-speech synthesis using VOICEVOX engine"
+    },
+    "arxiv-mcp-server": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "arxiv-mcp-server",
+        "--storage-path",
+        "~/Documents/ArxivPapers"
+      ],
+      "description": "Allows searching for and downloading papers. Downloaded papers are saved in Markdown format."
+    },
+    "sequentialthinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "description": "Enables sequential thinking capabilities."
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${MMS_GITHUB_PAT}"
+      },
+      "description": "GitHub repository management and interaction through MCP"
+    }
+  }
+}

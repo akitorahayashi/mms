@@ -1,51 +1,20 @@
-use clap::{Parser, Subcommand};
-use rs_cli_tmpl::commands;
-use rs_cli_tmpl::error::AppError;
-
-#[derive(Parser)]
-#[command(name = "rs-cli-tmpl")]
-#[command(
-    about = "Reference architecture for building Rust CLI tools",
-    long_about = None
-)]
-struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Add a new item to the template storage backend
-    #[clap(alias = "a")]
-    Add {
-        /// Identifier for the item
-        id: String,
-        /// Content to persist with the item
-        #[clap(short, long)]
-        content: String,
-    },
-    /// List all stored item identifiers
-    #[clap(alias = "ls")]
-    List,
-    /// Delete an item from storage
-    #[clap(alias = "rm")]
-    Delete {
-        /// Identifier for the item to delete
-        id: String,
-    },
-}
+use clap::Parser;
+use mms::cli::Cli;
+use mms::commands::{self, CommandContext};
+use mms::config::MmsPaths;
+use mms::error::AppError;
 
 fn main() {
-    let cli = Cli::parse();
-
-    let result: Result<(), AppError> = match cli.command {
-        Commands::Add { id, content } => commands::add(&id, &content),
-        Commands::List => commands::list().map(|_| ()),
-        Commands::Delete { id } => commands::delete(&id),
-    };
-
-    if let Err(e) = result {
-        eprintln!("Error: {}", e);
+    if let Err(err) = run() {
+        eprintln!("Error: {err}");
         std::process::exit(1);
     }
+}
+
+fn run() -> Result<(), AppError> {
+    let cli = Cli::parse();
+    let paths = MmsPaths::new()?;
+    let start_dir = std::env::current_dir()?;
+    let context = CommandContext { paths, start_dir, verbose: cli.verbose };
+    commands::execute(cli.command, context)
 }
