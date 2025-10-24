@@ -3,7 +3,6 @@ use crate::config::{GlobalCatalogue, LocalCatalogue, MmsPaths};
 use crate::error::AppError;
 use crate::integration::{CodexSync, GeminiSync};
 use std::path::{Path, PathBuf};
-use std::process::Command as ProcessCommand;
 
 pub struct CommandContext {
     pub paths: MmsPaths,
@@ -70,7 +69,8 @@ fn list(ctx: &CommandContext) -> Result<(), AppError> {
 }
 
 fn add(names: Vec<String>, ctx: &CommandContext) -> Result<(), AppError> {
-    let (mut local, local_path) = LocalCatalogue::load(&ctx.start_dir)?;
+    let (mut local, local_path) =
+        LocalCatalogue::load(&ctx.start_dir, &ctx.paths.global_catalogue_path())?;
     let global = GlobalCatalogue::ensure(&ctx.paths)?;
     let mut modified = false;
 
@@ -103,7 +103,8 @@ fn add(names: Vec<String>, ctx: &CommandContext) -> Result<(), AppError> {
 }
 
 fn remove(name: String, ctx: &CommandContext) -> Result<(), AppError> {
-    let (mut local, local_path) = LocalCatalogue::load(&ctx.start_dir)?;
+    let (mut local, local_path) =
+        LocalCatalogue::load(&ctx.start_dir, &ctx.paths.global_catalogue_path())?;
     if local.mcp_servers.remove(&name).is_some() {
         LocalCatalogue::save(&local_path, &local)?;
         println!("🗑️  Removed '{name}' from {}", local_path.display());
@@ -136,7 +137,8 @@ fn show_command(name: String, copy: bool, ctx: &CommandContext) -> Result<(), Ap
 }
 
 fn sync(skip_codex: bool, skip_gemini: bool, ctx: &CommandContext) -> Result<(), AppError> {
-    let (local, local_path) = LocalCatalogue::load(&ctx.start_dir)?;
+    let (local, local_path) =
+        LocalCatalogue::load(&ctx.start_dir, &ctx.paths.global_catalogue_path())?;
     let workspace =
         local_path.parent().map(Path::to_path_buf).unwrap_or_else(|| ctx.start_dir.clone());
     ctx.log(&format!("Using workspace {}", workspace.display()));
@@ -172,13 +174,14 @@ fn clean(selection: CleanSelection, ctx: &CommandContext) -> Result<(), AppError
     let mut operations = Vec::new();
 
     if selection.local
-        && let Some(path) = LocalCatalogue::discover(&ctx.start_dir)
+        && let Some(path) =
+            LocalCatalogue::discover(&ctx.start_dir, &ctx.paths.global_catalogue_path())
     {
         operations.push(("local .mcp.json", path));
     }
 
     if selection.gemini {
-        let root = LocalCatalogue::discover(&ctx.start_dir)
+        let root = LocalCatalogue::discover(&ctx.start_dir, &ctx.paths.global_catalogue_path())
             .and_then(|p| p.parent().map(Path::to_path_buf))
             .unwrap_or_else(|| ctx.start_dir.clone());
         operations.push(("Gemini settings", root.join(".gemini").join("settings.json")));
@@ -216,6 +219,8 @@ fn clean(selection: CleanSelection, ctx: &CommandContext) -> Result<(), AppError
 
 #[cfg(target_os = "macos")]
 fn copy_to_clipboard(payload: &str) {
+    use std::process::Command as ProcessCommand;
+
     if ProcessCommand::new("pbcopy")
         .stdin(std::process::Stdio::piped())
         .spawn()

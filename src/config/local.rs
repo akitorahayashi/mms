@@ -35,18 +35,18 @@ impl LocalCatalogue {
         Ok(path)
     }
 
-    pub fn discover(start_dir: &Path) -> Option<PathBuf> {
+    pub fn discover(start_dir: &Path, global_path: &Path) -> Option<PathBuf> {
         for candidate in start_dir.ancestors() {
             let path = candidate.join(".mcp.json");
-            if path.exists() {
+            if path.exists() && path != *global_path {
                 return Some(path);
             }
         }
         None
     }
 
-    pub fn load(start_dir: &Path) -> Result<(McpCatalogue, PathBuf), AppError> {
-        if let Some(path) = Self::discover(start_dir) {
+    pub fn load(start_dir: &Path, global_path: &Path) -> Result<(McpCatalogue, PathBuf), AppError> {
+        if let Some(path) = Self::discover(start_dir, global_path) {
             let contents = fs::read_to_string(&path)?;
             let catalogue: McpCatalogue = serde_json::from_str(&contents)?;
             Ok((catalogue, path))
