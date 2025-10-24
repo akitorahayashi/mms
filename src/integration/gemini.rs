@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Synchronises project `.mcp.json` files with Gemini settings.
+/// Synchronises Gemini settings (`.gemini/settings.json`) from the local `.mcp.json` catalogue.
 pub struct GeminiSync;
 
 impl GeminiSync {

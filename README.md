@@ -1,4 +1,4 @@
-# Manage MCP Servers (mms)
+## Overview
 
 `mms` is a Rust CLI for administering Model Context Protocol (MCP) server catalogues without depending on external provisioning scripts. It embeds the authoritative server list, keeps `~/.mcp.json` in sync (resolving environment placeholders such as `${MMS_GITHUB_PAT}` when set), and mirrors project-local catalogues into Gemini and Codex configurations so assistants can start with the right context automatically.
 
