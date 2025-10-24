@@ -69,7 +69,7 @@ mms clean [--local] [--gemini] [--global] [--master] [--all] [--dry-run]
 - `--gemini` deletes `.gemini/settings.json` alongside the project catalogue.
 - `--global` removes `~/.mcp.json` so it will be recreated from the embedded master on the next command.
 - `--master` removes the cached master copy at `~/.config/mms/master.json`.
-- `--all` selects every scope at once.
+- `--all` selects every scope at once (local, Gemini, global, master). Note: Codex configuration is not removed as it is managed globally.
 - `--dry-run` previews removals without touching the filesystem.
 
 ### Environment Variables

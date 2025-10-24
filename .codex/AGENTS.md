@@ -15,7 +15,7 @@
 - `src/main.rs` – entrypoint wiring CLI to command dispatcher
 - `src/commands.rs` – high-level command orchestration (init/add/remove/sync/clean)
 - `src/config/` – catalogue accessors (master/global/local) and path helpers
-- `src/integration/` – Gemini (`settings.json`) and Codex (`config.toml`) synchronisation
+- `src/integration/` – Gemini (`.gemini/settings.json`) and Codex (`.codex/config.toml`) synchronisation
 - `tests/` – integration tests using isolated temp homes (`tests/common/mod.rs`)
 
 ## Development Practices
@@ -28,7 +28,7 @@
 - Initialise local catalogue: `mms init [--from-global]`
 - Add/remove servers: `mms add <names…>` / `mms remove <name>`
 - Sync assistants: `mms sync [--skip-gemini] [--skip-codex]`
-- Clean artefacts: `mms clean [--local|--global|--master|--all] [--dry-run]`
+- Clean artefacts: `mms clean [--local|--gemini|--codex|--global|--master|--all] [--dry-run]`
 
 ## Testing Notes
 - Integration tests (`tests/init.rs`, `tests/manage.rs`, `tests/sync.rs`) compile and invoke the binary inside a sandboxed HOME

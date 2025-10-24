@@ -187,6 +187,10 @@ fn clean(selection: CleanSelection, ctx: &CommandContext) -> Result<(), AppError
         operations.push(("Gemini settings", root.join(".gemini").join("settings.json")));
     }
 
+    if selection.codex {
+        operations.push(("Codex config", ctx.paths.codex_config_path()));
+    }
+
     if selection.master {
         operations.push(("CLI master catalogue", ctx.paths.master_catalogue_path()));
     }
