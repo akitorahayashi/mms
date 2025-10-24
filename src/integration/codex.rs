@@ -1,5 +1,4 @@
 use crate::config::model::McpCatalogue;
-use crate::config::paths::MmsPaths;
 use crate::error::AppError;
 use std::fs;
 use std::path::PathBuf;
@@ -9,7 +8,10 @@ use toml_edit::{Array, DocumentMut, Item, Table, value};
 pub struct CodexSync;
 
 impl CodexSync {
-    pub fn sync(paths: &MmsPaths, catalogue: &McpCatalogue) -> Result<Option<PathBuf>, AppError> {
+    pub fn sync(
+        paths: &crate::config::paths::MmsPaths,
+        catalogue: &McpCatalogue,
+    ) -> Result<Option<PathBuf>, AppError> {
         let codex_config = paths.codex_config_path();
         if !codex_config.exists() {
             return Ok(None);
@@ -17,6 +19,7 @@ impl CodexSync {
 
         let contents = fs::read_to_string(&codex_config)?;
         let mut doc: DocumentMut = contents.parse()?;
+
         doc.remove("mcp_servers");
 
         let mut root = Table::new();

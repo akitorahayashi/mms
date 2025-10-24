@@ -16,7 +16,7 @@ pub struct Cli {
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Initialise a `.mcp.json` catalogue in the current directory.
-    #[command(alias = "ini")]
+    #[command(visible_aliases = ["ini"])]
     Init {
         /// Copy entries from the global `~/.mcp.json`.
         #[arg(long = "from-global", visible_alias = "from_global")]
@@ -24,25 +24,25 @@ pub enum Commands {
     },
 
     /// List MCP servers available in the global catalogue.
-    #[command(alias = "ls")]
+    #[command(visible_aliases = ["ls"])]
     List,
 
     /// Add servers from the global catalogue into the project-local file.
-    #[command(alias = "a")]
+    #[command(visible_aliases = ["a"])]
     Add {
         /// Server names to add.
         names: Vec<String>,
     },
 
     /// Remove a server from the project-local catalogue.
-    #[command(alias = "rm")]
+    #[command(visible_aliases = ["rm"])]
     Remove {
         /// Server name to remove.
         name: String,
     },
 
     /// Show the command used to start a server.
-    #[command(alias = "cmd")]
+    #[command(visible_aliases = ["cmd"])]
     Command {
         /// Server name to inspect.
         name: String,
@@ -52,6 +52,7 @@ pub enum Commands {
     },
 
     /// Synchronise local catalogue with Gemini and Codex configurations.
+    #[command(visible_aliases = ["s"])]
     Sync {
         /// Skip updating the Codex configuration.
         #[arg(long = "skip-codex")]
@@ -62,6 +63,7 @@ pub enum Commands {
     },
 
     /// Remove generated configuration artifacts.
+    #[command(visible_aliases = ["cln"])]
     Clean {
         #[command(flatten)]
         selection: CleanSelection,
@@ -70,7 +72,7 @@ pub enum Commands {
 
 #[derive(Debug, Clone, Args)]
 pub struct CleanSelection {
-    /// Remove everything (local, Gemini, global, master).
+    /// Remove everything (local, Gemini, Codex, global, master).
     #[arg(long)]
     pub all: bool,
     /// Remove the project `.mcp.json`.
@@ -79,6 +81,9 @@ pub struct CleanSelection {
     /// Remove project `.gemini/settings.json`.
     #[arg(long)]
     pub gemini: bool,
+    /// Remove global `~/.codex/config.toml`.
+    #[arg(long)]
+    pub codex: bool,
     /// Remove the global `~/.mcp.json`.
     #[arg(long)]
     pub global: bool,
@@ -95,11 +100,12 @@ impl CleanSelection {
         if self.all {
             self.local = true;
             self.gemini = true;
+            self.codex = true;
             self.global = true;
             self.master = true;
         }
 
-        if !self.local && !self.gemini && !self.global && !self.master {
+        if !self.local && !self.gemini && !self.codex && !self.global && !self.master {
             self.local = true;
         }
 
