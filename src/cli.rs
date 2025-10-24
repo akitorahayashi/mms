@@ -101,7 +101,6 @@ impl CleanSelection {
 
         if !self.local && !self.gemini && !self.global && !self.master {
             self.local = true;
-            self.gemini = true;
         }
 
         self

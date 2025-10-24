@@ -126,7 +126,7 @@ fn show_command(name: String, copy: bool, ctx: &CommandContext) -> Result<(), Ap
     if let Some(command) = server.render_command() {
         println!("Command for '{name}': {command}");
         if copy {
-            copy_to_clipboard(&format!("{name} {command}"));
+            copy_to_clipboard(&command);
         }
     } else {
         println!("⚠️  Server '{name}' does not define a command");
@@ -214,6 +214,7 @@ fn clean(selection: CleanSelection, ctx: &CommandContext) -> Result<(), AppError
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
 fn copy_to_clipboard(payload: &str) {
     if ProcessCommand::new("pbcopy")
         .stdin(std::process::Stdio::piped())
@@ -233,4 +234,9 @@ fn copy_to_clipboard(payload: &str) {
     } else {
         println!("⚠️  Unable to copy to clipboard (pbcopy not available)");
     }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn copy_to_clipboard(_payload: &str) {
+    println!("⚠️  Copying to clipboard is only supported on macOS.");
 }

@@ -1,37 +1,35 @@
-# kpv Development Overview
+# Manage MCP Servers (mms) – Agent Guide
 
-## Project Summary
-`kpv` is a command-line utility designed to simplify the management of `.env` files across multiple projects. It allows developers to save, link, and list environment configurations with ease, streamlining the process of switching between different development environments.
+## Project Snapshot
+`mms` is a Rust CLI that centralises Model Context Protocol (MCP) server management. It ships with an embedded master catalogue, provisions user-wide `~/.mcp.json` files, manages project-local catalogues, and synchronises Gemini and Codex configurations so assistants can launch with the correct MCP context automatically.
 
-## Tech Stack
-- **Language**: Rust
-- **CLI Parsing**: `clap`
-- **Development Dependencies**:
-  - `assert_cmd`
-  - `assert_fs`
-  - `predicates`
-  - `serial_test`
-  - `tempfile`
+## Stack & Tooling
+- **Language**: Rust (Edition 2024)
+- **CLI**: `clap` with derive macros (see `src/cli.rs`)
+- **Data Handling**: `serde`, `serde_json`, `toml_edit`
+- **Error Handling**: `thiserror`
+- **Tests**: `assert_cmd`, `tempfile`, `assert_fs`
 
-## Coding Standards
-- **Formatter**: `rustfmt` is used for code formatting. Key rules include a maximum line width of 100 characters, crate-level import granularity, and grouping imports by standard, external, and crate modules.
-- **Linter**: `clippy` is used for linting, with a strict policy of treating all warnings as errors (`-D warnings`).
+## Code Map
+- `src/cli.rs` – clap definitions and argument parsing
+- `src/main.rs` – entrypoint wiring CLI to command dispatcher
+- `src/commands.rs` – high-level command orchestration (init/add/remove/sync/clean)
+- `src/config/` – catalogue accessors (master/global/local) and path helpers
+- `src/integration/` – Gemini (`settings.json`) and Codex (`config.toml`) synchronisation
+- `tests/` – integration tests using isolated temp homes (`tests/common/mod.rs`)
 
-## Naming Conventions
-- **Structs and Enums**: `PascalCase` (e.g., `Cli`, `Commands`)
-- **Functions and Variables**: `snake_case` (e.g., `run_tests`, `test_context`)
-- **Modules**: `snake_case` (e.g., `cli_commands.rs`)
+## Development Practices
+- Format with `cargo fmt`
+- Lint with `cargo clippy --all-targets --all-features -- -D warnings`
+- Run tests via `cargo test`
+- Environment placeholders (e.g., `${MMS_GITHUB_PAT}`) are resolved from real env vars; `.env` files are not auto-loaded
 
-## Key Commands
-- **Build (Debug)**: `cargo build`
-- **Build (Release)**: `cargo build --release`
-- **Format Check**: `cargo fmt --check`
-- **Lint**: `cargo clippy --all-targets --all-features -- -D warnings`
-- **Test**: `RUST_TEST_THREADS=1 cargo test --all-targets --all-features`
+## Typical Workflows
+- Initialise local catalogue: `mms init [--from-global]`
+- Add/remove servers: `mms add <names…>` / `mms remove <name>`
+- Sync assistants: `mms sync [--skip-gemini] [--skip-codex]`
+- Clean artefacts: `mms clean [--local|--global|--master|--all] [--dry-run]`
 
-## Testing Strategy
-- **Unit Tests**: Located within the `src/` directory alongside the code they test.
-- **Core Logic Tests**: Found in `src/core/`, utilizing mock storage to ensure business logic is tested in isolation.
-- **Integration Tests**: Housed in the `tests/` directory, these tests cover the public API and CLI user flows from an external perspective.
-- **CI**: GitHub Actions automatically runs build, linting, and test workflows, as defined in `.github/workflows/`.
-- **Sequential Testing**: The `serial_test` crate is employed for tests that interact with the filesystem to prevent race conditions.
+## Testing Notes
+- Integration tests (`tests/init.rs`, `tests/manage.rs`, `tests/sync.rs`) compile and invoke the binary inside a sandboxed HOME
+- No unit tests remain in `src/` after the migration; prefer CLI-level coverage mirroring real usage

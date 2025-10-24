@@ -43,7 +43,19 @@ impl McpServer {
         if self.args.is_empty() {
             Some(base.to_string())
         } else {
-            let args = self.args.iter().map(|a| a.trim()).collect::<Vec<_>>().join(" ");
+            let args = self
+                .args
+                .iter()
+                .map(|a| {
+                    let trimmed = a.trim();
+                    if trimmed.contains(char::is_whitespace) {
+                        format!("\"{trimmed}\"")
+                    } else {
+                        trimmed.to_string()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(" ");
             Some(format!("{base} {args}"))
         }
     }

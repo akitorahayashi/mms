@@ -29,7 +29,7 @@ impl GlobalCatalogue {
     }
 
     pub fn write_from_master(paths: &MmsPaths) -> Result<(), AppError> {
-        let mut master = MasterCatalogue::load(paths)?;
+        let mut master: McpCatalogue = serde_json::from_str(MasterCatalogue::EMBEDDED_JSON)?;
         for server in master.mcp_servers.values_mut() {
             apply_env_substitutions(server);
         }

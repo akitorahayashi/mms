@@ -1,4 +1,3 @@
-use std::env::VarError;
 use std::io;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -8,8 +7,6 @@ use thiserror::Error;
 pub enum AppError {
     #[error("configuration error: {0}")]
     Config(String),
-    #[error("environment variable {0} is not set")]
-    MissingEnv(String),
     #[error("expected file not found: {0}")]
     MissingFile(PathBuf),
     #[error(transparent)]
@@ -18,19 +15,6 @@ pub enum AppError {
     Json(#[from] serde_json::Error),
     #[error(transparent)]
     Toml(#[from] toml_edit::TomlError),
-}
-
-impl From<VarError> for AppError {
-    fn from(value: VarError) -> Self {
-        match value {
-            VarError::NotPresent => {
-                AppError::Config("required environment variable is missing".into())
-            }
-            VarError::NotUnicode(_) => {
-                AppError::Config("environment variable contained invalid UTF-8".into())
-            }
-        }
-    }
 }
 
 impl AppError {

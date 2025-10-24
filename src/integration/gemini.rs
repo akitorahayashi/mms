@@ -1,6 +1,6 @@
 use crate::config::model::McpCatalogue;
 use crate::error::AppError;
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -23,9 +23,10 @@ impl GeminiSync {
         if let Value::Object(ref mut map) = settings {
             map.insert("mcpServers".to_string(), serde_json::to_value(&catalogue.mcp_servers)?);
         } else {
-            let mut map = Map::new();
-            map.insert("mcpServers".to_string(), serde_json::to_value(&catalogue.mcp_servers)?);
-            settings = Value::Object(map);
+            return Err(AppError::config(format!(
+                "Gemini settings file at {} is not a JSON object",
+                settings_path.display()
+            )));
         }
 
         let serialised = serde_json::to_string_pretty(&settings)?;
