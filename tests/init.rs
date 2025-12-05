@@ -27,3 +27,14 @@ fn init_from_global_populates_catalogue() {
     let json: serde_json::Value = serde_json::from_str(&local_content).expect("valid json");
     assert!(json["mcpServers"].as_object().unwrap().contains_key("context7"));
 }
+
+#[test]
+fn version_flag_works() {
+    let ctx = TestContext::new();
+
+    ctx.cli()
+        .arg("--version")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(env!("CARGO_PKG_VERSION")));
+}
