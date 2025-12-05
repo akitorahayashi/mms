@@ -3,6 +3,7 @@ use clap::{Args, Parser, Subcommand};
 /// Manage MCP Servers (mms) CLI.
 #[derive(Debug, Parser)]
 #[command(name = "mms")]
+#[command(version)]
 #[command(about = "Manage MCP Servers", long_about = None)]
 pub struct Cli {
     /// Enable verbose output for troubleshooting.

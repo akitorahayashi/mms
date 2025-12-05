@@ -37,6 +37,7 @@ Commands:
 
 Options:
   -v, --verbose   Enable verbose logging
+      --version   Show version information
   -h, --help      Show the global usage message
 ```
 
