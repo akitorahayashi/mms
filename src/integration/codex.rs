@@ -2,7 +2,7 @@ use crate::config::model::McpCatalogue;
 use crate::error::AppError;
 use std::fs;
 use std::path::PathBuf;
-use toml_edit::{Array, DocumentMut, Item, Table, value};
+use toml_edit::{value, Array, DocumentMut, Item, Table};
 
 /// Synchronises MCP server definitions into `~/.codex/config.toml`.
 pub struct CodexSync;
