@@ -1,8 +1,8 @@
 use clap::Parser;
 use mms::cli::Cli;
-use mms::CommandContext;
 use mms::config::MmsPaths;
 use mms::error::AppError;
+use mms::CommandContext;
 
 fn main() {
     if let Err(err) = run() {

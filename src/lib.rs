@@ -180,15 +180,18 @@ fn sync(skip_codex: bool, skip_gemini: bool, ctx: &CommandContext) -> Result<(),
 fn clean(selection: CleanSelection, ctx: &CommandContext) -> Result<(), AppError> {
     let mut operations = Vec::new();
 
-    if selection.local
-        && let Some(path) =
-            LocalCatalogue::discover(&ctx.start_dir, &ctx.paths.global_catalogue_path())
-    {
-        operations.push(("local .mcp.json", path));
+    let discovered_path =
+        LocalCatalogue::discover(&ctx.start_dir, &ctx.paths.global_catalogue_path());
+
+    if selection.local {
+        if let Some(path) = &discovered_path {
+            operations.push(("local .mcp.json", path.clone()));
+        }
     }
 
     if selection.gemini {
-        let root = LocalCatalogue::discover(&ctx.start_dir, &ctx.paths.global_catalogue_path())
+        let root = discovered_path
+            .as_ref()
             .and_then(|p| p.parent().map(Path::to_path_buf))
             .unwrap_or_else(|| ctx.start_dir.clone());
         operations.push(("Gemini settings", root.join(".gemini").join("settings.json")));
@@ -228,31 +231,19 @@ fn clean(selection: CleanSelection, ctx: &CommandContext) -> Result<(), AppError
     Ok(())
 }
 
-#[cfg(target_os = "macos")]
 fn copy_to_clipboard(payload: &str) {
-    use std::process::Command as ProcessCommand;
+    use arboard::Clipboard;
 
-    if ProcessCommand::new("pbcopy")
-        .stdin(std::process::Stdio::piped())
-        .spawn()
-        .and_then(|mut child| {
-            use std::io::Write;
-            if let Some(stdin) = child.stdin.take() {
-                let mut handle = stdin;
-                handle.write_all(payload.as_bytes())?;
+    match Clipboard::new() {
+        Ok(mut clipboard) => {
+            if clipboard.set_text(payload).is_ok() {
+                println!("📋 Copied to clipboard");
+            } else {
+                println!("⚠️  Unable to copy to clipboard");
             }
-            child.wait()?;
-            Ok(())
-        })
-        .is_ok()
-    {
-        println!("📋 Copied to clipboard");
-    } else {
-        println!("⚠️  Unable to copy to clipboard (pbcopy not available)");
+        }
+        Err(_) => {
+            println!("⚠️  Unable to access clipboard");
+        }
     }
-}
-
-#[cfg(not(target_os = "macos"))]
-fn copy_to_clipboard(_payload: &str) {
-    println!("⚠️  Copying to clipboard is only supported on macOS.");
 }

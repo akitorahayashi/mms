@@ -1,6 +1,6 @@
 use crate::config::model::McpCatalogue;
 use crate::error::AppError;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
 
